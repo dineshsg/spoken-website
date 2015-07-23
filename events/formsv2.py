@@ -115,3 +115,8 @@ class CourseMapForm(forms.ModelForm):
 
   def __init__(self, *args, **kwargs):
     super(CourseMapForm, self).__init__(*args, **kwargs)
+
+class SampleCalenderForm(forms.ModelForm):
+  class Meta:
+    model = SampleTrainingTimeTable
+    exclude = []

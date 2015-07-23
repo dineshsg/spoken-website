@@ -10,7 +10,7 @@ from django.db import IntegrityError
 from django.utils.decorators import method_decorator
 from events.decorators import group_required
 from events.forms import StudentBatchForm, TrainingRequestForm, \
-    TrainingRequestEditForm, CourseMapForm
+    TrainingRequestEditForm, CourseMapForm, SampleCalenderForm
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, render_to_response
 from django.core.validators import validate_email
@@ -22,6 +22,7 @@ from django.http import JsonResponse
 from creation.models import FossAvailableForWorkshop
 import csv
 from cms.sortable import *
+from events.views import is_organiser
 from django.contrib import messages
 
 #pdf generate
@@ -377,6 +378,7 @@ class StudentListView(ListView):
     context['header'] = self.header
     context['ordering'] = get_field_index(self.raw_get_data)
     context['batch'] = self.batch
+    context['group'] = self.request.user.groups()
     return context
 
 class TrainingRequestCreateView(CreateView):
@@ -725,6 +727,31 @@ class CourseMapUpdateView(UpdateView):
     form_class = CourseMapForm
     success_url = "/software-training/course-map-list/"
 
+
+class SampleCalenderCreateView(CreateView):
+  form_class = SampleCalenderForm
+  success_url = "/software-training/sample-calender/"
+  @method_decorator(group_required("Organiser"))
+  def dispatch(self, *args, **kwargs):
+    return super(SampleCalenderCreateView, self).dispatch(*args, **kwargs)
+
+
+class SampleCalenderListView(ListView):
+  model = SampleTrainingTimeTable
+  paginate_by = 50
+  def get_context_data(self, **kwargs):
+    context = super(SampleCalenderListView, self).get_context_data(**kwargs)
+    temp = self.request.user.groups.all()
+    grup = []
+    for i in temp:
+        grup.append(i.name)
+    context['group']=grup
+    return context
+
+class SampleCalenderDeleteView(DeleteView):
+  model=SampleTrainingTimeTable
+  def dispatch(self, *args, **kwargs):
+    return super(SampleCalenderDeleteView, self).dispatch(*args, **kwargs)
 
 ### Ajax
 class SaveStudentView(JSONResponseMixin, View):

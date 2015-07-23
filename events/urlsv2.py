@@ -84,8 +84,27 @@ urlpatterns = [
     url(
       r'^course-map/(?P<pk>\d+)$', 
       CourseMapUpdateView.as_view(template_name=\
-        "coursemap.html"), 
+        "coursemap.html"),
       name="coursemapupdate"
+    ),
+    url(
+      r'^sample-calender/new/$',
+      SampleCalenderCreateView.as_view(template_name=\
+        "sample_calender.html"),
+      name="sample_calender_new"
+    ),
+    url(
+      r'^sample-calender/$',
+      SampleCalenderListView.as_view(template_name=\
+        "sample_calender_list.html"),
+      name="sample_calender_list"
+    ),
+    url(
+      r'^sample-calender/delete/(?P<pk>\d+)$',
+      SampleCalenderDeleteView.as_view(template_name=\
+        "student_delete.html", \
+        success_url="/software-training/sample-calender/"),
+      name="sample_calender_delete"
     ),
     #ajax
     url(

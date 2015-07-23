@@ -1,6 +1,6 @@
 from django.db import models
 from datetime import datetime, date, timedelta
-from django.db.models.signals import pre_delete
+from django.db.models.signals import pre_delete, pre_save, post_save
 from django.db.models import Q
 #import auth user models
 from django.contrib.auth.models import User
@@ -8,11 +8,12 @@ from django.contrib.auth.models import User
 #creation app models
 from creation.models import FossCategory, Language, FossAvailableForWorkshop, FossAvailableForTest
 from mdldjango.models import *
-from events.signals import revoke_student_permission
+from events.signals import revoke_student_permission, skip_saving_file, save_file
 
 #validation
 from django.core.exceptions import ValidationError
 
+import os
 # Create your models here.
 class State(models.Model):
     users = models.ManyToManyField(User, related_name="resource_person", through='ResourcePerson')
@@ -854,7 +855,20 @@ class SingleTrainingAttendance(models.Model):
   class Meta:
     unique_together = (("training", "firstname", "lastname", "email"),)
 
+def sample_file_path(instance, filename):
+  ext = os.path.splitext(filename)[1]
+  ext = ext.lower()
+  return '/'.join(['calender', str(instance.id), str(instance.id) + ext])
+
+class SampleTrainingTimeTable(models.Model):
+  state = models.ForeignKey(State)
+  institute_type = models.ForeignKey(InstituteType)
+  file = models.FileField(upload_to=sample_file_path, null=True, blank=True)
+
+
 ### Signals
 
-
 pre_delete.connect(revoke_student_permission, sender=Student)
+pre_save.connect(skip_saving_file, sender=SampleTrainingTimeTable)
+post_save.connect(save_file, sender=SampleTrainingTimeTable)
+
