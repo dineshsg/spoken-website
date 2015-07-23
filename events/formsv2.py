@@ -139,6 +139,7 @@ class CourseMapForm(forms.ModelForm):
   def __init__(self, *args, **kwargs):
     super(CourseMapForm, self).__init__(*args, **kwargs)
 
+
 class SingleTrainingForm(forms.ModelForm):
   training_type = forms.ChoiceField(choices=[('', '---------'), (0, 'School'),(1,'Vocational'),(2,'Live workshop'),(3,'Pilot workshop')])
   csv_file = forms.FileField(required = True)
@@ -160,3 +161,9 @@ class SingleTrainingForm(forms.ModelForm):
     if today.date() > tdate:
       raise forms.ValidationError("Invalid semester training date")
     return tdate
+
+
+class SampleCalenderForm(forms.ModelForm):
+  class Meta:
+    model = SampleTrainingTimeTable
+    exclude = []
