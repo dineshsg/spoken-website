@@ -281,20 +281,21 @@ class StudentBatchCreateView(CreateView):
         student = self.get_student(row[2])
         if not student:
           student = self.create_student(row[0], row[1], row[2], row[3])
-          if student:
-            try:
-              smrec = StudentMaster.objects.get(student=student, moved=False)
-              if int(batch_id) == int(smrec.batch_id):
-                row.append(1)
-              else:
-                row.append(0)
-                warning.append(row)
-                continue
-            except ObjectDoesNotExist:
-              StudentMaster.objects.create(student=student, batch_id=batch_id)
-              write_flag = True
+        if student:
+          try:
+            smrec = StudentMaster.objects.get(student=student, moved=False)
+            if int(batch_id) == int(smrec.batch_id):
+              row.append(1)
+            else:
+              row.append(0)
+            warning.append(row)
+            continue
+          except ObjectDoesNotExist:
+            StudentMaster.objects.create(student=student, batch_id=batch_id)
+            write_flag = True
       StudentBatch.objects.get(pk=batch_id).update_student_count()
-    except:
+    except Exception, e:
+      print e
       messages.warning(self.request, "The file you uploaded is not a valid CSV file, please add a valid CSV file")
     return skipped, error, warning, write_flag
 
@@ -415,6 +416,7 @@ class TrainingRequestCreateView(CreateView):
   def get_context_data(self, **kwargs):
     context = super(TrainingRequestCreateView, self).get_context_data(**kwargs)
     context['training_planner_id'] = self.tpid
+    context['tp'] = TrainingPlanner.objects.filter(pk=self.tpid, organiser_id = self.request.user.organiser.id)[0]
     return context
 
   def get_form_kwargs(self):
@@ -871,7 +873,7 @@ class SingletrainingCompletedListView(ListView):
   paginate_by = 10
   
   def dispatch(self, *args, **kwargs):
-    self.queryset = SingleTraining.objects.filter(status=2)
+    self.queryset = SingleTraining.objects.filter(status=2).order_by('-tdate')
     return super(SingletrainingCompletedListView, self).dispatch(*args, **kwargs)
 
 class SingletrainingCreateView(CreateView):
